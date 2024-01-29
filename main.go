@@ -1,0 +1,176 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/go-clix/cli"
+	"github.com/baranyildirim/helmvendor/pkg/helm"
+	"github.com/rs/zerolog"
+	"gopkg.in/yaml.v2"
+)
+
+func main() {
+	cmd := &cli.Command{
+		Use:   "helmvendor",
+		Short: "Declarative vendoring of Helm Charts",
+		Args:  cli.ArgsMin(1), // Make sure we print out the help if no subcommand is given, `tk tool charts` is not valid
+	}
+
+	addCommandsWithLogLevelOption(
+		cmd,
+		chartsInitCmd(),
+		chartsAddCmd(),
+		chartsAddRepoCmd(),
+		chartsVendorCmd(),
+		chartsConfigCmd(),
+	)
+
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
+	}
+	return
+}
+
+func chartsVendorCmd() *cli.Command {
+	cmd := &cli.Command{
+		Use:   "vendor",
+		Short: "Download Charts to a local folder",
+	}
+	prune := cmd.Flags().Bool("prune", false, "also remove non-vendored files from the destination directory")
+
+	cmd.Run = func(cmd *cli.Command, args []string) error {
+		c, err := loadChartfile()
+		if err != nil {
+			return err
+		}
+
+		return c.Vendor(*prune)
+	}
+
+	return cmd
+}
+
+func chartsAddCmd() *cli.Command {
+	cmd := &cli.Command{
+		Use:   "add [chart@version] [...]",
+		Short: "Adds Charts to the chartfile",
+	}
+
+	cmd.Run = func(cmd *cli.Command, args []string) error {
+		c, err := loadChartfile()
+		if err != nil {
+			return err
+		}
+
+		return c.Add(args)
+	}
+
+	return cmd
+}
+
+func chartsAddRepoCmd() *cli.Command {
+	cmd := &cli.Command{
+		Use:   "add-repo [NAME] [URL]",
+		Short: "Adds a repository to the chartfile",
+		Args:  cli.ArgsExact(2),
+	}
+
+	cmd.Run = func(cmd *cli.Command, args []string) error {
+		c, err := loadChartfile()
+		if err != nil {
+			return err
+		}
+
+		return c.AddRepos(helm.Repo{
+			Name: args[0],
+			URL:  args[1],
+		})
+	}
+
+	return cmd
+}
+
+func chartsConfigCmd() *cli.Command {
+	cmd := &cli.Command{
+		Use:   "config",
+		Short: "Displays the current manifest",
+	}
+
+	cmd.Run = func(cmd *cli.Command, args []string) error {
+		c, err := loadChartfile()
+		if err != nil {
+			return err
+		}
+
+		data, err := yaml.Marshal(c.Manifest)
+		if err != nil {
+			return err
+		}
+
+		fmt.Print(string(data))
+
+		return nil
+	}
+
+	return cmd
+}
+
+func chartsInitCmd() *cli.Command {
+	cmd := &cli.Command{
+		Use:   "init",
+		Short: "Create a new Chartfile",
+	}
+
+	cmd.Run = func(cmd *cli.Command, args []string) error {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		path := filepath.Join(wd, helm.Filename)
+		if _, err := os.Stat(path); err == nil {
+			return fmt.Errorf("chartfile at '%s' already exists. Aborting", path)
+		}
+
+		if _, err := helm.InitChartfile(path); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(os.Stderr, "Success! New Chartfile created at '%s'", path)
+		return nil
+	}
+
+	return cmd
+}
+
+func loadChartfile() (*helm.Charts, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	return helm.LoadChartfile(wd)
+}
+
+func addCommandsWithLogLevelOption(rootCmd *cli.Command, cmds ...*cli.Command) {
+	for _, cmd := range cmds {
+		levels := []string{zerolog.Disabled.String(), zerolog.FatalLevel.String(), zerolog.ErrorLevel.String(), zerolog.WarnLevel.String(), zerolog.InfoLevel.String(), zerolog.DebugLevel.String(), zerolog.TraceLevel.String()}
+		cmd.Flags().String("log-level", zerolog.InfoLevel.String(), "possible values: "+strings.Join(levels, ", "))
+
+		cmdRun := cmd.Run
+		cmd.Run = func(cmd *cli.Command, args []string) error {
+			level, err := zerolog.ParseLevel(cmd.Flags().Lookup("log-level").Value.String())
+			if err != nil {
+				return err
+			}
+			zerolog.SetGlobalLevel(level)
+
+			return cmdRun(cmd, args)
+		}
+		rootCmd.AddCommand(cmd)
+	}
+}

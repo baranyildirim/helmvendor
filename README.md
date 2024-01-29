@@ -35,13 +35,14 @@ $ helmvendor charts add-repo grafana https://grafana.github.io/helm-charts
 ```
 
 Another way is to modify chartfile.yaml directly:
-
+```
 version: 1
 repositories:
   - name: stable
     url: https://charts.helm.sh/stable
 + - name: grafana
 +   url: https://grafana.github.io/helm-charts
+```
 
 Installing multiple versions of the same chart: If you wish to install multiple versions of the same chart, you can write them to a specific directory.
 You can do so with a :<directory> suffix in the add command, or by modifying the chartfile manually.
@@ -52,7 +53,7 @@ helmvendor add stable/mysql@1.6.8:1.6.8
 ```
 
 The resulting chartfile will look like this:
-
+```
 version: 1
 directory: charts
 repositories:
@@ -65,6 +66,7 @@ requires:
 - chart: stable/mysql
   directory: 1.6.8
   version: 1.6.8
+```
 
 # Install charts from chartfile
 To install charts from an existing chartfile, use the following:

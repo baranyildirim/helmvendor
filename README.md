@@ -14,7 +14,7 @@ Helm does not make vendoring incredibly easy by itself. helm pull provides the r
 Using the go toolchain:
 ```
 $ cd /tmp
-$ go install github.com/grafana/tanka/cmd/tk@latest
+$ go install github.com/baranyildirim/helmvendor@latest
 ```
 
 # Create a chartfile.yaml, install charts

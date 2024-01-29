@@ -143,7 +143,7 @@ func (e ExecHelm) cmd(action string, args ...string) *exec.Cmd {
 // helmCmd returns a bare exec.Cmd pointed at the local helm binary
 func helmCmd(args ...string) *exec.Cmd {
 	bin := "helm"
-	if env := os.Getenv("TANKA_HELM_PATH"); env != "" {
+	if env := os.Getenv("HELM_PATH"); env != "" {
 		bin = env
 	}
 

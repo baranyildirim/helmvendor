@@ -10,6 +10,13 @@ Documentation also extracted from https://tanka.dev/helm
 
 Helm does not make vendoring incredibly easy by itself. helm pull provides the required plumbing, but it does not record its actions in a reproducible manner.
 
+# Installation
+Using the go toolchain:
+```
+$ cd /tmp
+$ go install github.com/grafana/tanka/cmd/tk@latest
+```
+
 # Create a chartfile.yaml, install charts
 Start by creating a chartfile using the init command:
 ```

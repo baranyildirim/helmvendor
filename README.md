@@ -1,28 +1,39 @@
 This tool is extracted from tanka.
-It is equivalent to `helmvendor`, with all of the jsonnet specific functionality removed.
+
+It is equivalent to `tk tool charts`, with all of the jsonnet specific functionality removed.
+
 Original source: https://github.com/grafana/tanka
+
 Documentation also extracted from https://tanka.dev/helm
 
 # Helmvendor
 
 Helm does not make vendoring incredibly easy by itself. helm pull provides the required plumbing, but it does not record its actions in a reproducible manner.
 
-# Create a chartfile.yaml in the current directory, e.g. in lib/myLibrary
+# Create a chartfile.yaml
+```
 $ helmvendor init
+```
 
+```
 $ # Install the MySQL chart at version 1.6.7 from the stable repository
 $ helmvendor add stable/mysql@1.6.7
+```
 
 Adding charts: To add a chart, use the following:
 
+```
 $ helmvendor add <repo>/<name>@<version>
+```
 
-This will also call helmvendor vendor, so that the charts/ directory is updated.
+This will also call `helmvendor vendor``, so that the charts/ directory is updated.
 
 Adding Repositories: By default, the stable repository is automatically set up for you. If you wish to add another repository, you can use the add-repo command:
 
-# Add the official Grafana repository
+# Add repository
+```
 $ helmvendor charts add-repo grafana https://grafana.github.io/helm-charts
+```
 
 Another way is to modify chartfile.yaml directly:
 
@@ -36,8 +47,10 @@ repositories:
 Installing multiple versions of the same chart: If you wish to install multiple versions of the same chart, you can write them to a specific directory.
 You can do so with a :<directory> suffix in the add command, or by modifying the chartfile manually.
 
+```
 helmvendor add stable/mysql@1.6.7:1.6.7
 helmvendor add stable/mysql@1.6.8:1.6.8
+```
 
 The resulting chartfile will look like this:
 
@@ -56,7 +69,9 @@ requires:
 
 Install charts from chartfile: To install charts from an existing chartfile, use the following:
 
+```
 $ helmvendor vendor
+```
 
 Optionally, you can also pass the --prune flag to remove vendored charts that are no longer in the chartfile.
 OCI Registry Support

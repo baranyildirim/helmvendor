@@ -1,4 +1,4 @@
-This tool is extracted from tanka.
+This tool is extracted from tanka. It is intended to act as the missing "vendor" sub-command of the helm CLI. 
 
 It is equivalent to `tk tool charts`, with all of the jsonnet specific functionality removed.
 

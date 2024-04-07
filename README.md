@@ -35,7 +35,7 @@ $ helmvendor add stable/mysql@1.6.7
 ```
 
 # Add repository
-Adding Repositories: By default, the stable repository is automatically set up for you. If you wish to add another repository, you can use the add-repo command:
+By default, the stable repository is automatically set up for you. If you wish to add another repository, you can use the add-repo command:
 ```
 $ helmvendor charts add-repo grafana https://grafana.github.io/helm-charts
 ```
